@@ -62,7 +62,7 @@ impl Plugin for JsPlugin {
     ctx: &rolldown_plugin::PluginContext,
     args: &rolldown_plugin::HookBuildStartArgs<'_>,
   ) -> rolldown_plugin::HookNoopReturn {
-    if let Some(cb) = &self.build_start {
+    if let Some(cb) = &self.inner.build_start {
       cb.await_call((ctx.clone().into(), BindingNormalizedOptions::new(Arc::clone(args.options))))
         .await?;
     }
@@ -78,7 +78,7 @@ impl Plugin for JsPlugin {
     ctx: &rolldown_plugin::PluginContext,
     args: &rolldown_plugin::HookResolveIdArgs<'_>,
   ) -> rolldown_plugin::HookResolveIdReturn {
-    if let Some(cb) = &self.resolve_id {
+    if let Some(cb) = &self.inner.resolve_id {
       let custom = args
         .custom
         .get::<JsPluginContextResolveCustomArgId>(&JsPluginContextResolveCustomArgId)
@@ -111,7 +111,7 @@ impl Plugin for JsPlugin {
     ctx: &rolldown_plugin::PluginContext,
     args: &rolldown_plugin::HookResolveIdArgs<'_>,
   ) -> rolldown_plugin::HookResolveIdReturn {
-    if let Some(cb) = &self.resolve_dynamic_import {
+    if let Some(cb) = &self.inner.resolve_dynamic_import {
       Ok(
         cb.await_call((
           ctx.clone().into(),
@@ -135,7 +135,7 @@ impl Plugin for JsPlugin {
     ctx: &rolldown_plugin::PluginContext,
     args: &rolldown_plugin::HookLoadArgs<'_>,
   ) -> rolldown_plugin::HookLoadReturn {
-    if let Some(cb) = &self.load {
+    if let Some(cb) = &self.inner.load {
       Ok(
         cb.await_call((ctx.clone().into(), args.id.to_string()))
           .await?
@@ -156,7 +156,7 @@ impl Plugin for JsPlugin {
     ctx: rolldown_plugin::SharedTransformPluginContext,
     args: &rolldown_plugin::HookTransformArgs<'_>,
   ) -> rolldown_plugin::HookTransformReturn {
-    if let Some(cb) = &self.transform {
+    if let Some(cb) = &self.inner.transform {
       Ok(
         cb.await_call((
           BindingTransformPluginContext::new(Arc::clone(&ctx)),
@@ -182,7 +182,7 @@ impl Plugin for JsPlugin {
     ctx: &rolldown_plugin::PluginContext,
     module_info: Arc<rolldown_common::ModuleInfo>,
   ) -> rolldown_plugin::HookNoopReturn {
-    if let Some(cb) = &self.module_parsed {
+    if let Some(cb) = &self.inner.module_parsed {
       cb.await_call((ctx.clone().into(), BindingModuleInfo::new(module_info))).await?;
     }
     Ok(())
@@ -197,7 +197,7 @@ impl Plugin for JsPlugin {
     ctx: &rolldown_plugin::PluginContext,
     args: Option<&rolldown_plugin::HookBuildEndArgs<'_>>,
   ) -> rolldown_plugin::HookNoopReturn {
-    if let Some(cb) = &self.build_end {
+    if let Some(cb) = &self.inner.build_end {
       cb.await_call((
         ctx.clone().into(),
         args.map(|args| {
@@ -224,7 +224,7 @@ impl Plugin for JsPlugin {
     ctx: &rolldown_plugin::PluginContext,
     args: &rolldown_plugin::HookRenderStartArgs<'_>,
   ) -> rolldown_plugin::HookNoopReturn {
-    if let Some(cb) = &self.render_start {
+    if let Some(cb) = &self.inner.render_start {
       cb.await_call((ctx.clone().into(), BindingNormalizedOptions::new(Arc::clone(args.options))))
         .await?;
     }
@@ -240,7 +240,7 @@ impl Plugin for JsPlugin {
     ctx: &rolldown_plugin::PluginContext,
     args: &rolldown_plugin::HookAddonArgs<'_>,
   ) -> rolldown_plugin::HookInjectionOutputReturn {
-    if let Some(cb) = &self.banner {
+    if let Some(cb) = &self.inner.banner {
       Ok(
         cb.await_call((ctx.clone().into(), args.chunk.clone().into()))
           .await?
@@ -261,7 +261,7 @@ impl Plugin for JsPlugin {
     ctx: &rolldown_plugin::PluginContext,
     args: &rolldown_plugin::HookAddonArgs<'_>,
   ) -> rolldown_plugin::HookInjectionOutputReturn {
-    if let Some(cb) = &self.intro {
+    if let Some(cb) = &self.inner.intro {
       Ok(
         cb.await_call((ctx.clone().into(), args.chunk.clone().into()))
           .await?
@@ -282,7 +282,7 @@ impl Plugin for JsPlugin {
     ctx: &rolldown_plugin::PluginContext,
     args: &rolldown_plugin::HookAddonArgs<'_>,
   ) -> rolldown_plugin::HookInjectionOutputReturn {
-    if let Some(cb) = &self.outro {
+    if let Some(cb) = &self.inner.outro {
       Ok(
         cb.await_call((ctx.clone().into(), args.chunk.clone().into()))
           .await?
@@ -303,7 +303,7 @@ impl Plugin for JsPlugin {
     ctx: &rolldown_plugin::PluginContext,
     args: &rolldown_plugin::HookAddonArgs<'_>,
   ) -> rolldown_plugin::HookInjectionOutputReturn {
-    if let Some(cb) = &self.footer {
+    if let Some(cb) = &self.inner.footer {
       Ok(
         cb.await_call((ctx.clone().into(), args.chunk.clone().into()))
           .await?
@@ -324,7 +324,7 @@ impl Plugin for JsPlugin {
     ctx: &rolldown_plugin::PluginContext,
     args: &rolldown_plugin::HookRenderChunkArgs<'_>,
   ) -> rolldown_plugin::HookRenderChunkReturn {
-    if let Some(cb) = &self.render_chunk {
+    if let Some(cb) = &self.inner.render_chunk {
       Ok(
         cb.await_call((
           ctx.clone().into(),
@@ -350,7 +350,7 @@ impl Plugin for JsPlugin {
     ctx: &rolldown_plugin::PluginContext,
     chunk: &rolldown_common::RollupRenderedChunk,
   ) -> rolldown_plugin::HookAugmentChunkHashReturn {
-    if let Some(cb) = &self.augment_chunk_hash {
+    if let Some(cb) = &self.inner.augment_chunk_hash {
       Ok(cb.await_call((ctx.clone().into(), chunk.clone().into())).await?)
     } else {
       Ok(None)
@@ -366,7 +366,7 @@ impl Plugin for JsPlugin {
     ctx: &rolldown_plugin::PluginContext,
     args: &rolldown_plugin::HookRenderErrorArgs<'_>,
   ) -> rolldown_plugin::HookNoopReturn {
-    if let Some(cb) = &self.render_error {
+    if let Some(cb) = &self.inner.render_error {
       cb.await_call((
         ctx.clone().into(),
         args
@@ -389,7 +389,7 @@ impl Plugin for JsPlugin {
     ctx: &rolldown_plugin::PluginContext,
     args: &mut rolldown_plugin::HookGenerateBundleArgs<'_>,
   ) -> rolldown_plugin::HookNoopReturn {
-    if let Some(cb) = &self.generate_bundle {
+    if let Some(cb) = &self.inner.generate_bundle {
       let changed = cb
         .await_call((
           ctx.clone().into(),
@@ -412,7 +412,7 @@ impl Plugin for JsPlugin {
     ctx: &rolldown_plugin::PluginContext,
     args: &mut rolldown_plugin::HookWriteBundleArgs<'_>,
   ) -> rolldown_plugin::HookNoopReturn {
-    if let Some(cb) = &self.write_bundle {
+    if let Some(cb) = &self.inner.write_bundle {
       let changed = cb
         .await_call((
           ctx.clone().into(),
@@ -433,7 +433,7 @@ impl Plugin for JsPlugin {
     &self,
     ctx: &rolldown_plugin::PluginContext,
   ) -> rolldown_plugin::HookNoopReturn {
-    if let Some(cb) = &self.close_bundle {
+    if let Some(cb) = &self.inner.close_bundle {
       cb.await_call(ctx.clone().into()).await?;
     }
     Ok(())
@@ -449,7 +449,7 @@ impl Plugin for JsPlugin {
     path: &str,
     event: rolldown_common::WatcherChangeKind,
   ) -> rolldown_plugin::HookNoopReturn {
-    if let Some(cb) = &self.watch_change {
+    if let Some(cb) = &self.inner.watch_change {
       cb.await_call((ctx.clone().into(), path.to_string(), event.to_string())).await?;
     }
     Ok(())
@@ -463,7 +463,7 @@ impl Plugin for JsPlugin {
     &self,
     ctx: &rolldown_plugin::PluginContext,
   ) -> rolldown_plugin::HookNoopReturn {
-    if let Some(cb) = &self.close_watcher {
+    if let Some(cb) = &self.inner.close_watcher {
       cb.await_call(ctx.clone().into()).await?;
     }
     Ok(())
